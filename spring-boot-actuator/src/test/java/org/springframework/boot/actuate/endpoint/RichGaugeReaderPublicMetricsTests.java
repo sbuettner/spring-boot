@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+
 import org.springframework.boot.actuate.metrics.Metric;
 import org.springframework.boot.actuate.metrics.rich.InMemoryRichGaugeRepository;
 
@@ -31,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests for {@link RichGaugeReaderPublicMetrics}.
  *
- * @author Johannes Stelzer
+ * @author Johannes Edmeier
  */
 public class RichGaugeReaderPublicMetricsTests {
 

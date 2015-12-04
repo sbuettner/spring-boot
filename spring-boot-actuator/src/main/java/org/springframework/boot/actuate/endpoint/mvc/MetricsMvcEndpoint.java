@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.springframework.boot.actuate.endpoint.MetricsEndpoint;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,7 +43,7 @@ public class MetricsMvcEndpoint extends EndpointMvcAdapter {
 		this.delegate = delegate;
 	}
 
-	@RequestMapping(value = "/{name:.*}", method = RequestMethod.GET)
+	@RequestMapping(value = "/{name:.*}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	@HypermediaDisabled
 	public Object value(@PathVariable String name) {
@@ -59,20 +60,30 @@ public class MetricsMvcEndpoint extends EndpointMvcAdapter {
 	 */
 	private class NamePatternMapFilter extends NamePatternFilter<Map<String, ?>> {
 
-		public NamePatternMapFilter(Map<String, ?> source) {
+		NamePatternMapFilter(Map<String, ?> source) {
 			super(source);
 		}
 
 		@Override
 		protected void getNames(Map<String, ?> source, NameCallback callback) {
 			for (String name : source.keySet()) {
-				callback.addName(name);
+				try {
+					callback.addName(name);
+				}
+				catch (NoSuchMetricException ex) {
+					// Metric with null value. Continue.
+				}
 			}
 		}
 
 		@Override
+		protected Object getOptionalValue(Map<String, ?> source, String name) {
+			return source.get(name);
+		}
+
+		@Override
 		protected Object getValue(Map<String, ?> source, String name) {
-			Object value = source.get(name);
+			Object value = getOptionalValue(source, name);
 			if (value == null) {
 				throw new NoSuchMetricException("No such metric: " + name);
 			}

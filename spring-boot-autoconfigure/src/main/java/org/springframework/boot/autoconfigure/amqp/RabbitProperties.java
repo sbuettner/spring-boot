@@ -17,7 +17,6 @@
 package org.springframework.boot.autoconfigure.amqp;
 
 import java.util.LinkedHashSet;
-import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.amqp.core.AcknowledgeMode;
@@ -143,8 +142,8 @@ public class RabbitProperties {
 			}
 			result.add(address);
 		}
-		return (result.isEmpty() ? null : StringUtils
-				.collectionToCommaDelimitedString(result));
+		return (result.isEmpty() ? null
+				: StringUtils.collectionToCommaDelimitedString(result));
 	}
 
 	public void setPort(int port) {
@@ -256,29 +255,6 @@ public class RabbitProperties {
 
 		public void setTrustStorePassword(String trustStorePassword) {
 			this.trustStorePassword = trustStorePassword;
-		}
-
-		/**
-		 * Create the ssl configuration as expected by the
-		 * {@link org.springframework.amqp.rabbit.connection.RabbitConnectionFactoryBean
-		 * RabbitConnectionFactoryBean}.
-		 * @return the ssl configuration
-		 */
-		public Properties createSslProperties() {
-			Properties properties = new Properties();
-			if (getKeyStore() != null) {
-				properties.put("keyStore", getKeyStore());
-			}
-			if (getKeyStorePassword() != null) {
-				properties.put("keyStore.passPhrase", getKeyStorePassword());
-			}
-			if (getTrustStore() != null) {
-				properties.put("trustStore", getTrustStore());
-			}
-			if (getTrustStorePassword() != null) {
-				properties.put("trustStore.passPhrase", getTrustStorePassword());
-			}
-			return properties;
 		}
 
 	}

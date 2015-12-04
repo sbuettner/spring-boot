@@ -19,12 +19,12 @@ import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import sample.jpa.SampleJpaApplication;
+import sample.jpa.domain.Note;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import sample.jpa.SampleJpaApplication;
-import sample.jpa.domain.Note;
 
 import static org.junit.Assert.assertEquals;
 
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
  * @author Andy Wilkinson
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = SampleJpaApplication.class)
+@SpringApplicationConfiguration(SampleJpaApplication.class)
 public class JpaNoteRepositoryIntegrationTests {
 
 	@Autowired

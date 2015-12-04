@@ -31,14 +31,14 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
  */
 class OnEnabledHealthIndicatorCondition extends SpringBootCondition {
 
-	private static final String ANNOTATION_CLASS = ConditionalOnEnablednHealthIndicator.class
+	private static final String ANNOTATION_CLASS = ConditionalOnEnabledHealthIndicator.class
 			.getName();
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context,
 			AnnotatedTypeMetadata metadata) {
-		AnnotationAttributes annotationAttributes = AnnotationAttributes.fromMap(metadata
-				.getAnnotationAttributes(ANNOTATION_CLASS));
+		AnnotationAttributes annotationAttributes = AnnotationAttributes
+				.fromMap(metadata.getAnnotationAttributes(ANNOTATION_CLASS));
 		String endpointName = annotationAttributes.getString("value");
 		ConditionOutcome outcome = getHealthIndicatorOutcome(context, endpointName);
 		if (outcome != null) {

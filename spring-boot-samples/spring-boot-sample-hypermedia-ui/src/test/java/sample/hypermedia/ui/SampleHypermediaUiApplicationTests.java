@@ -21,25 +21,23 @@ import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
+import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
-import sample.hypermedia.ui.SampleHypermediaUiApplication;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = SampleHypermediaUiApplication.class)
-@WebAppConfiguration
-@IntegrationTest({ "management.context-path=", "server.port=0" })
+@SpringApplicationConfiguration(SampleHypermediaUiApplication.class)
+@WebIntegrationTest(value = { "management.context-path=" }, randomPort = true)
 public class SampleHypermediaUiApplicationTests {
 
 	@Value("${local.server.port}")
@@ -47,15 +45,15 @@ public class SampleHypermediaUiApplicationTests {
 
 	@Test
 	public void home() {
-		String response = new TestRestTemplate().getForObject("http://localhost:"
-				+ this.port, String.class);
+		String response = new TestRestTemplate()
+				.getForObject("http://localhost:" + this.port, String.class);
 		assertTrue("Wrong body: " + response, response.contains("Hello World"));
 	}
 
 	@Test
 	public void links() {
-		String response = new TestRestTemplate().getForObject("http://localhost:"
-				+ this.port + "/links", String.class);
+		String response = new TestRestTemplate().getForObject(
+				"http://localhost:" + this.port + "/actuator", String.class);
 		assertTrue("Wrong body: " + response, response.contains("\"_links\":"));
 	}
 
@@ -64,8 +62,9 @@ public class SampleHypermediaUiApplicationTests {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		ResponseEntity<String> response = new TestRestTemplate().exchange(
-				new RequestEntity<Void>(headers, HttpMethod.GET, new URI(
-						"http://localhost:" + this.port + "/links")), String.class);
+				new RequestEntity<Void>(headers, HttpMethod.GET,
+						new URI("http://localhost:" + this.port + "/actuator")),
+				String.class);
 		assertTrue("Wrong body: " + response, response.getBody().contains("\"_links\":"));
 	}
 
@@ -73,9 +72,9 @@ public class SampleHypermediaUiApplicationTests {
 	public void homeWithHtml() throws Exception {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
-		ResponseEntity<String> response = new TestRestTemplate().exchange(
-				new RequestEntity<Void>(headers, HttpMethod.GET, new URI(
-						"http://localhost:" + this.port)), String.class);
+		ResponseEntity<String> response = new TestRestTemplate()
+				.exchange(new RequestEntity<Void>(headers, HttpMethod.GET,
+						new URI("http://localhost:" + this.port)), String.class);
 		assertTrue("Wrong body: " + response, response.getBody().contains("Hello World"));
 	}
 

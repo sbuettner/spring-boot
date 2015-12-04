@@ -29,19 +29,20 @@ import javax.mail.URLName;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 
 /**
  * Tests for {@link MailHealthIndicator}.
  *
- * @author Johannes Stelzer
+ * @author Johannes Edmeier
  * @author Stephane Nicoll
  */
 public class MailHealthIndicatorTests {
@@ -72,7 +73,7 @@ public class MailHealthIndicatorTests {
 
 	@Test
 	public void smtpIsDown() throws MessagingException {
-		doThrow(new MessagingException("A test exception")).when(this.mailSender)
+		willThrow(new MessagingException("A test exception")).given(this.mailSender)
 				.testConnection();
 		Health health = this.indicator.health();
 		assertEquals(Status.DOWN, health.getStatus());
@@ -84,8 +85,8 @@ public class MailHealthIndicatorTests {
 
 	public static class SuccessTransport extends Transport {
 
-		public SuccessTransport(Session session, URLName urlname) {
-			super(session, urlname);
+		public SuccessTransport(Session session, URLName urlName) {
+			super(session, urlName);
 		}
 
 		@Override

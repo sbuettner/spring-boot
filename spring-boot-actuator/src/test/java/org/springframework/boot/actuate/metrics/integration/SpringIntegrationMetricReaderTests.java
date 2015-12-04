@@ -18,6 +18,7 @@ package org.springframework.boot.actuate.metrics.integration;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.metrics.integration.SpringIntegrationMetricReaderTests.TestConfiguration;
 import org.springframework.boot.autoconfigure.integration.IntegrationAutoConfiguration;
@@ -39,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  * @author Dave Syer
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = TestConfiguration.class)
+@SpringApplicationConfiguration(TestConfiguration.class)
 @IntegrationTest("spring.jmx.enabled=true")
 @DirtiesContext
 public class SpringIntegrationMetricReaderTests {

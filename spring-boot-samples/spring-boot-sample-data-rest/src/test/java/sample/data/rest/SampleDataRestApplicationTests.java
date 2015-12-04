@@ -19,6 +19,7 @@ package sample.data.rest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,7 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import sample.data.rest.SampleDataRestApplication;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -44,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Andy Wilkinson
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = SampleDataRestApplication.class)
+@SpringApplicationConfiguration(SampleDataRestApplication.class)
 @WebAppConfiguration
 @ActiveProfiles("scratch")
 // Separate profile for web tests to avoid clashing databases
@@ -83,6 +83,6 @@ public class SampleDataRestApplicationTests {
 		this.mvc.perform(
 				get("/api/cities/search/findByNameContainingAndCountryContainingAllIgnoringCase?name=&country=UK"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("_embedded.citys", hasSize(3)));
+				.andExpect(jsonPath("_embedded.cities", hasSize(3)));
 	}
 }

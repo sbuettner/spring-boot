@@ -700,7 +700,7 @@ NOTE: You need to add `compileJava.dependsOn(processResources)` to your build to
 that resources are processed before code is compiled. Without this directive any
 `additional-spring-configuration-metadata.json` files will not be processed.
 
-The processor will pickup both classes and methods that are annotated with
+The processor will pick up both classes and methods that are annotated with
 `@ConfigurationProperties`. The Javadoc for field values within configuration classes
 will be used to populate the `description` attribute.
 
@@ -752,11 +752,17 @@ if it were nested.
 
 [[configuration-metadata-additional-metadata]]
 ==== Adding additional meta-data
-Spring Boot's configuration file handling is quite flexible; and it often the case that
-properties may exist that are not bound to a `@ConfigurationProperties` bean. To support
-such cases and allow you to provide custom "hints", the annotation processor will
-automatically merge items from `META-INF/additional-spring-configuration-metadata.json`
-into the main meta-data file.
+Spring Boot's configuration file handling is quite flexible; and it is often the case
+that properties may exist that are not bound to a `@ConfigurationProperties` bean. You
+may also need to tune some attributes of an existing key. To support such cases and allow
+you to provide custom "hints", the annotation processor will automatically merge items
+from `META-INF/additional-spring-configuration-metadata.json` into the main meta-data
+file.
+
+If you refer to a property that has been detected automatically, the description,
+default value and deprecation information are overridden if specified. If the manual
+property declaration is not identified in the current module, it is added as a brand new
+property.
 
 The format of the `additional-spring-configuration-metadata.json` file is exactly the same
 as the regular `spring-configuration-metadata.json`. The additional properties file is

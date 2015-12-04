@@ -27,7 +27,7 @@ import org.springframework.util.StringUtils;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 
 /**
- * Adds endpoints links to {@link ResourceSupport}.
+ * Adds endpoint links to {@link ResourceSupport}.
  *
  * @author Dave Syer
  */
@@ -37,7 +37,7 @@ class LinksEnhancer {
 
 	private final MvcEndpoints endpoints;
 
-	public LinksEnhancer(String rootPath, MvcEndpoints endpoints) {
+	LinksEnhancer(String rootPath, MvcEndpoints endpoints) {
 		this.rootPath = rootPath;
 		this.endpoints = endpoints;
 	}

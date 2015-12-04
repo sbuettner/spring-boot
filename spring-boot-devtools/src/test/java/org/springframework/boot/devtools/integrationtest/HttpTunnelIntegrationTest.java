@@ -21,6 +21,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
@@ -61,7 +62,7 @@ import static org.junit.Assert.assertEquals;
  * @author Phillip Webb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = HttpTunnelIntegrationTest.Config.class)
+@SpringApplicationConfiguration(HttpTunnelIntegrationTest.Config.class)
 @WebIntegrationTest
 public class HttpTunnelIntegrationTest {
 

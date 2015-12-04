@@ -21,14 +21,14 @@ import java.util.Properties;
 import java.util.TreeMap;
 
 /**
- * Bean friendly variant of <a
- * href="http://www.atomikos.com/Documentation/JtaProperties">Atomikos configuration
+ * Bean friendly variant of
+ * <a href="http://www.atomikos.com/Documentation/JtaProperties">Atomikos configuration
  * properties</a>. Allows for setter based configuration and is amiable to relaxed data
  * binding.
  *
  * @author Phillip Webb
- * @see #asProperties()
  * @since 1.2.0
+ * @see #asProperties()
  */
 public class AtomikosProperties {
 
@@ -106,7 +106,7 @@ public class AtomikosProperties {
 	/**
 	 * Specifies if subtransactions should be joined when possible. Defaults to true. When
 	 * false, no attempt to call {@code XAResource.start(TM_JOIN)} will be made for
-	 * different but related subtransctions. This setting has no effect on resource access
+	 * different but related subtransactions. This setting has no effect on resource access
 	 * within one and the same transaction. If you don't use subtransactions then this
 	 * setting can be ignored.
 	 * @param serialJtaTransactions if serial JTA transaction are supported

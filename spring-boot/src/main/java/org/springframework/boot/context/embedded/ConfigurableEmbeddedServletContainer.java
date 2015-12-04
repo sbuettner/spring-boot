@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -80,6 +80,12 @@ public interface ConfigurableEmbeddedServletContainer {
 	void setPersistSession(boolean persistSession);
 
 	/**
+	 * Set the directory used to store serialized session data.
+	 * @param sessionStoreDir the directory or {@code null} to use a default location.
+	 */
+	void setSessionStoreDir(File sessionStoreDir);
+
+	/**
 	 * Sets the specific network address that the server should bind to.
 	 * @param address the address to set (defaults to {@code null})
 	 */
@@ -138,7 +144,7 @@ public interface ConfigurableEmbeddedServletContainer {
 	void setMimeMappings(MimeMappings mimeMappings);
 
 	/**
-	 * Sets the document root folder which will be used by the web context to serve static
+	 * Sets the document root directory which will be used by the web context to serve static
 	 * files.
 	 * @param documentRoot the document root or {@code null} if not required
 	 */
@@ -171,7 +177,7 @@ public interface ConfigurableEmbeddedServletContainer {
 	void setSsl(Ssl ssl);
 
 	/**
-	 * Sets the configuration that will be applied to the container's JSP servlet
+	 * Sets the configuration that will be applied to the container's JSP servlet.
 	 * @param jspServlet the JSP servlet configuration
 	 */
 	void setJspServlet(JspServlet jspServlet);

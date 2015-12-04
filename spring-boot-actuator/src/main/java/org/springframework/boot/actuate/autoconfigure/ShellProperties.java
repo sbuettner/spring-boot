@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.Assert;
@@ -35,6 +36,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Christian Dupuis
  * @author Phillip Webb
+ * @author Eddú Meléndez
  */
 @ConfigurationProperties(prefix = "shell", ignoreUnknownFields = true)
 public class ShellProperties {
@@ -42,16 +44,16 @@ public class ShellProperties {
 	private static Log logger = LogFactory.getLog(ShellProperties.class);
 
 	/**
-	 * Authentication type (can be "simple", "spring", "key" or "jaas"). Auto-detected
-	 * according to the environment (i.e. if Spring Security is available, "spring" is
-	 * used by default).
+	 * Authentication type. Auto-detected according to the environment (i.e. if Spring
+	 * Security is available, "spring" is used by default).
 	 */
 	private String auth = "simple";
 
 	private boolean defaultAuth = true;
 
 	@Autowired(required = false)
-	private CrshShellProperties[] additionalProperties = new CrshShellProperties[] { new SimpleAuthenticationProperties() };
+	private CrshShellProperties[] additionalProperties = new CrshShellProperties[] {
+			new SimpleAuthenticationProperties() };
 
 	/**
 	 * Scan for changes and update the command if necessary (in seconds).
@@ -216,13 +218,13 @@ public class ShellProperties {
 	/**
 	 * Base class for Auth specific properties.
 	 */
-	public static abstract class CrshShellAuthenticationProperties extends
-			CrshShellProperties {
+	public static abstract class CrshShellAuthenticationProperties
+			extends CrshShellProperties {
 
 	}
 
 	/**
-	 * SSH properties
+	 * SSH properties.
 	 */
 	public static class Ssh extends CrshShellProperties {
 
@@ -241,10 +243,22 @@ public class ShellProperties {
 		 */
 		private Integer port = 2000;
 
+		/**
+		 * Number of milliseconds after user will be prompted to login again.
+		 */
+		private Integer authTimeout = 600000;
+
+		/**
+		 * Number of milliseconds after which unused connections are closed.
+		 */
+		private Integer idleTimeout = 600000;
+
 		@Override
 		protected void applyToCrshShellConfig(Properties config) {
 			if (this.enabled) {
 				config.put("crash.ssh.port", String.valueOf(this.port));
+				config.put("crash.ssh.auth_timeout", String.valueOf(this.authTimeout));
+				config.put("crash.ssh.idle_timeout", String.valueOf(this.idleTimeout));
 				if (this.keyPath != null) {
 					config.put("crash.ssh.keypath", this.keyPath);
 				}
@@ -277,10 +291,25 @@ public class ShellProperties {
 			return this.port;
 		}
 
+		public Integer getIdleTimeout() {
+			return this.idleTimeout;
+		}
+
+		public void setIdleTimeout(Integer idleTimeout) {
+			this.idleTimeout = idleTimeout;
+		}
+
+		public Integer getAuthTimeout() {
+			return this.authTimeout;
+		}
+
+		public void setAuthTimeout(Integer authTimeout) {
+			this.authTimeout = authTimeout;
+		}
 	}
 
 	/**
-	 * Telnet properties
+	 * Telnet properties.
 	 */
 	public static class Telnet extends CrshShellProperties {
 
@@ -323,11 +352,11 @@ public class ShellProperties {
 	}
 
 	/**
-	 * Auth specific properties for JAAS authentication
+	 * Auth specific properties for JAAS authentication.
 	 */
 	@ConfigurationProperties(prefix = "shell.auth.jaas", ignoreUnknownFields = false)
-	public static class JaasAuthenticationProperties extends
-			CrshShellAuthenticationProperties {
+	public static class JaasAuthenticationProperties
+			extends CrshShellAuthenticationProperties {
 
 		/**
 		 * JAAS domain.
@@ -352,11 +381,11 @@ public class ShellProperties {
 	}
 
 	/**
-	 * Auth specific properties for key authentication
+	 * Auth specific properties for key authentication.
 	 */
 	@ConfigurationProperties(prefix = "shell.auth.key", ignoreUnknownFields = false)
-	public static class KeyAuthenticationProperties extends
-			CrshShellAuthenticationProperties {
+	public static class KeyAuthenticationProperties
+			extends CrshShellAuthenticationProperties {
 
 		/**
 		 * Path to the authentication key. This should point to a valid ".pem" file.
@@ -383,11 +412,11 @@ public class ShellProperties {
 	}
 
 	/**
-	 * Auth specific properties for simple authentication
+	 * Auth specific properties for simple authentication.
 	 */
 	@ConfigurationProperties(prefix = "shell.auth.simple", ignoreUnknownFields = false)
-	public static class SimpleAuthenticationProperties extends
-			CrshShellAuthenticationProperties {
+	public static class SimpleAuthenticationProperties
+			extends CrshShellAuthenticationProperties {
 
 		private static Log logger = LogFactory
 				.getLog(SimpleAuthenticationProperties.class);
@@ -458,11 +487,11 @@ public class ShellProperties {
 	}
 
 	/**
-	 * Auth specific properties for Spring authentication
+	 * Auth specific properties for Spring authentication.
 	 */
 	@ConfigurationProperties(prefix = "shell.auth.spring", ignoreUnknownFields = false)
-	public static class SpringAuthenticationProperties extends
-			CrshShellAuthenticationProperties {
+	public static class SpringAuthenticationProperties
+			extends CrshShellAuthenticationProperties {
 
 		/**
 		 * Comma-separated list of required roles to login to the CRaSH console.

@@ -19,6 +19,7 @@ package sample.data.mongo;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.OutputCapture;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -33,7 +34,7 @@ import static org.junit.Assert.assertTrue;
  * @author Andy Wilkinson
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = SampleMongoApplication.class)
+@SpringApplicationConfiguration(SampleMongoApplication.class)
 @IntegrationTest
 public class SampleMongoApplicationTests {
 

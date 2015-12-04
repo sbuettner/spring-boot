@@ -16,9 +16,11 @@
 
 package org.springframework.boot.actuate.endpoint;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.EnvironmentTestUtils;
@@ -37,8 +39,8 @@ import static org.junit.Assert.assertThat;
  *
  * @author Dave Syer
  */
-public class ConfigurationPropertiesReportEndpointTests extends
-		AbstractEndpointTests<ConfigurationPropertiesReportEndpoint> {
+public class ConfigurationPropertiesReportEndpointTests
+		extends AbstractEndpointTests<ConfigurationPropertiesReportEndpoint> {
 
 	public ConfigurationPropertiesReportEndpointTests() {
 		super(Config.class, ConfigurationPropertiesReportEndpoint.class, "configprops",
@@ -134,8 +136,8 @@ public class ConfigurationPropertiesReportEndpointTests extends
 		assertEquals("654321", nestedProperties.get("myTestProperty"));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testKeySanitizationWithCustomPatternAndKeyByEnvironment()
 			throws Exception {
 		this.context = new AnnotationConfigApplicationContext();
@@ -150,6 +152,29 @@ public class ConfigurationPropertiesReportEndpointTests extends
 		assertNotNull(nestedProperties);
 		assertEquals("******", nestedProperties.get("dbPassword"));
 		assertEquals("******", nestedProperties.get("myTestProperty"));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testKeySanitizationWithCustomPatternUsingCompositeKeys()
+			throws Exception {
+		// gh-4415
+		this.context = new AnnotationConfigApplicationContext();
+		EnvironmentTestUtils.addEnvironment(this.context,
+				"endpoints.configprops.keys-to-sanitize: .*\\.secrets\\..*, .*\\.hidden\\..*");
+		this.context.register(Config.class);
+		this.context.refresh();
+		ConfigurationPropertiesReportEndpoint report = getEndpointBean();
+		Map<String, Object> properties = report.invoke();
+		Map<String, Object> nestedProperties = (Map<String, Object>) ((Map<String, Object>) properties
+				.get("testProperties")).get("properties");
+		assertNotNull(nestedProperties);
+		Map<String, Object> secrets = (Map<String, Object>) nestedProperties
+				.get("secrets");
+		Map<String, Object> hidden = (Map<String, Object>) nestedProperties.get("hidden");
+		assertEquals("******", secrets.get("mine"));
+		assertEquals("******", secrets.get("yours"));
+		assertEquals("******", hidden.get("mine"));
 	}
 
 	@Test
@@ -196,6 +221,15 @@ public class ConfigurationPropertiesReportEndpointTests extends
 
 		private Boolean mixedBoolean = true;
 
+		private Map<String, Object> secrets = new HashMap<String, Object>();
+
+		private Hidden hidden = new Hidden();
+
+		public TestProperties() {
+			this.secrets.put("mine", "myPrivateThing");
+			this.secrets.put("yours", "yourPrivateThing");
+		}
+
 		public String getDbPassword() {
 			return this.dbPassword;
 		}
@@ -218,6 +252,36 @@ public class ConfigurationPropertiesReportEndpointTests extends
 
 		public void setMixedBoolean(Boolean mixedBoolean) {
 			this.mixedBoolean = mixedBoolean;
+		}
+
+		public Map<String, Object> getSecrets() {
+			return this.secrets;
+		}
+
+		public void setSecrets(Map<String, Object> secrets) {
+			this.secrets = secrets;
+		}
+
+		public Hidden getHidden() {
+			return this.hidden;
+		}
+
+		public void setHidden(Hidden hidden) {
+			this.hidden = hidden;
+		}
+
+		public static class Hidden {
+
+			private String mine = "mySecret";
+
+			public String getMine() {
+				return this.mine;
+			}
+
+			public void setMine(String mine) {
+				this.mine = mine;
+			}
+
 		}
 
 	}

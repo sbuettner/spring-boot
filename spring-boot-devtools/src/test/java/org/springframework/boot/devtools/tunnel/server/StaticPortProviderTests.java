@@ -19,7 +19,6 @@ package org.springframework.boot.devtools.tunnel.server;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.springframework.boot.devtools.tunnel.server.StaticPortProvider;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -35,7 +34,7 @@ public class StaticPortProviderTests {
 	public ExpectedException thrown = ExpectedException.none();
 
 	@Test
-	public void portMustBePostive() throws Exception {
+	public void portMustBePositive() throws Exception {
 		this.thrown.expect(IllegalArgumentException.class);
 		this.thrown.expectMessage("Port must be positive");
 		new StaticPortProvider(0);

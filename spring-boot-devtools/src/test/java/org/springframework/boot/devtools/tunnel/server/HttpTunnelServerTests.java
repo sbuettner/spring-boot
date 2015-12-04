@@ -35,9 +35,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
 import org.springframework.boot.devtools.tunnel.payload.HttpTunnelPayload;
-import org.springframework.boot.devtools.tunnel.server.HttpTunnelServer;
-import org.springframework.boot.devtools.tunnel.server.TargetServerConnection;
 import org.springframework.boot.devtools.tunnel.server.HttpTunnelServer.HttpConnection;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpAsyncRequestControl;
@@ -147,7 +146,7 @@ public class HttpTunnelServerTests {
 	}
 
 	@Test
-	public void intialRequestIsUsedForFirstServerResponse() throws Exception {
+	public void initialRequestIsUsedForFirstServerResponse() throws Exception {
 		this.servletRequest.addHeader(SEQ_HEADER, "1");
 		this.servletRequest.setContent("hello".getBytes());
 		this.server.handle(this.request, this.response);
@@ -168,7 +167,7 @@ public class HttpTunnelServerTests {
 	}
 
 	@Test
-	public void typicalReqestResponseTraffic() throws Exception {
+	public void typicalRequestResponseTraffic() throws Exception {
 		MockHttpConnection h1 = new MockHttpConnection();
 		this.server.handle(h1);
 		MockHttpConnection h2 = new MockHttpConnection("hello server", 1);
@@ -224,7 +223,7 @@ public class HttpTunnelServerTests {
 	}
 
 	@Test
-	public void requestRecievedOutOfOrder() throws Exception {
+	public void requestReceivedOutOfOrder() throws Exception {
 		MockHttpConnection h1 = new MockHttpConnection();
 		MockHttpConnection h2 = new MockHttpConnection("1+2", 1);
 		MockHttpConnection h3 = new MockHttpConnection("+3", 2);
@@ -306,11 +305,11 @@ public class HttpTunnelServerTests {
 		testHttpConnectionNonAsync(100);
 	}
 
-	private void testHttpConnectionNonAsync(long sleepBeforeResponse) throws IOException,
-			InterruptedException {
+	private void testHttpConnectionNonAsync(long sleepBeforeResponse)
+			throws IOException, InterruptedException {
 		ServerHttpRequest request = mock(ServerHttpRequest.class);
-		given(request.getAsyncRequestControl(this.response)).willThrow(
-				new IllegalArgumentException());
+		given(request.getAsyncRequestControl(this.response))
+				.willThrow(new IllegalArgumentException());
 		final HttpConnection connection = new HttpConnection(request, this.response);
 		final AtomicBoolean responded = new AtomicBoolean();
 		Thread connectionThread = new Thread() {
@@ -429,12 +428,12 @@ public class HttpTunnelServerTests {
 	 */
 	private static class MockHttpConnection extends HttpConnection {
 
-		public MockHttpConnection() {
+		MockHttpConnection() {
 			super(new ServletServerHttpRequest(new MockHttpServletRequest()),
 					new ServletServerHttpResponse(new MockHttpServletResponse()));
 		}
 
-		public MockHttpConnection(String content, int seq) {
+		MockHttpConnection(String content, int seq) {
 			this();
 			MockHttpServletRequest request = getServletRequest();
 			request.setContent(content.getBytes());

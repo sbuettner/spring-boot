@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,21 +22,18 @@ import java.util.Map;
 import org.springframework.boot.actuate.audit.AuditEvent;
 import org.springframework.boot.actuate.audit.listener.AuditApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.ApplicationListener;
 import org.springframework.security.authentication.event.AbstractAuthenticationEvent;
 import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.web.authentication.switchuser.AuthenticationSwitchUserEvent;
 import org.springframework.util.ClassUtils;
 
 /**
- * {@link ApplicationListener} expose Spring Security {@link AbstractAuthenticationEvent
- * authentication events} as {@link AuditEvent}s.
+ * Default implementation of {@link AuthenticationAuditListener}.
  *
  * @author Dave Syer
  */
-public class AuthenticationAuditListener implements
-		ApplicationListener<AbstractAuthenticationEvent>, ApplicationEventPublisherAware {
+public class AuthenticationAuditListener extends AbstractAuthenticationAuditListener {
 
 	private static final String WEB_LISTENER_CHECK_CLASS = "org.springframework.security.web.authentication.switchuser.AuthenticationSwitchUserEvent";
 
@@ -64,8 +61,8 @@ public class AuthenticationAuditListener implements
 		else if (this.webListener != null && this.webListener.accepts(event)) {
 			this.webListener.process(this, event);
 		}
-		else {
-			onAuthenticationEvent(event);
+		else if (event instanceof AuthenticationSuccessEvent) {
+			onAuthenticationSuccessEvent((AuthenticationSuccessEvent) event);
 		}
 	}
 
@@ -77,7 +74,7 @@ public class AuthenticationAuditListener implements
 				"AUTHENTICATION_FAILURE", data));
 	}
 
-	private void onAuthenticationEvent(AbstractAuthenticationEvent event) {
+	private void onAuthenticationSuccessEvent(AuthenticationSuccessEvent event) {
 		Map<String, Object> data = new HashMap<String, Object>();
 		if (event.getAuthentication().getDetails() != null) {
 			data.put("details", event.getAuthentication().getDetails());

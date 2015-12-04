@@ -16,9 +16,6 @@
 
 package org.springframework.boot.context.embedded.undertow;
 
-import io.undertow.servlet.UndertowServletLogger;
-import io.undertow.servlet.api.SessionPersistenceManager;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,6 +27,9 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import io.undertow.servlet.UndertowServletLogger;
+import io.undertow.servlet.api.SessionPersistenceManager;
+
 /**
  * {@link SessionPersistenceManager} that stores session information in a file.
  *
@@ -38,10 +38,10 @@ import java.util.Map;
  */
 public class FileSessionPersistence implements SessionPersistenceManager {
 
-	private final File folder;
+	private final File dir;
 
-	public FileSessionPersistence(File folder) {
-		this.folder = folder;
+	public FileSessionPersistence(File dir) {
+		this.dir = dir;
 	}
 
 	@Override
@@ -91,8 +91,8 @@ public class FileSessionPersistence implements SessionPersistenceManager {
 		return null;
 	}
 
-	private Map<String, PersistentSession> load(File file) throws IOException,
-			ClassNotFoundException {
+	private Map<String, PersistentSession> load(File file)
+			throws IOException, ClassNotFoundException {
 		ObjectInputStream stream = new ObjectInputStream(new FileInputStream(file));
 		try {
 			return load(stream);
@@ -107,7 +107,8 @@ public class FileSessionPersistence implements SessionPersistenceManager {
 		Map<String, SerializablePersistentSession> session = readSession(stream);
 		long time = System.currentTimeMillis();
 		Map<String, PersistentSession> result = new LinkedHashMap<String, PersistentSession>();
-		for (Map.Entry<String, SerializablePersistentSession> entry : session.entrySet()) {
+		for (Map.Entry<String, SerializablePersistentSession> entry : session
+				.entrySet()) {
 			PersistentSession entrySession = entry.getValue().getPersistentSession();
 			if (entrySession.getExpiration().getTime() > time) {
 				result.put(entry.getKey(), entrySession);
@@ -123,10 +124,10 @@ public class FileSessionPersistence implements SessionPersistenceManager {
 	}
 
 	private File getSessionFile(String deploymentName) {
-		if (!this.folder.exists()) {
-			this.folder.mkdirs();
+		if (!this.dir.exists()) {
+			this.dir.mkdirs();
 		}
-		return new File(this.folder, deploymentName + ".session");
+		return new File(this.dir, deploymentName + ".session");
 	}
 
 	@Override
@@ -134,6 +135,9 @@ public class FileSessionPersistence implements SessionPersistenceManager {
 		getSessionFile(deploymentName).delete();
 	}
 
+	/**
+	 * Session data in a serializable form.
+	 */
 	static class SerializablePersistentSession implements Serializable {
 
 		private static final long serialVersionUID = 0L;
@@ -142,9 +146,10 @@ public class FileSessionPersistence implements SessionPersistenceManager {
 
 		private final Map<String, Object> sessionData;
 
-		public SerializablePersistentSession(PersistentSession session) {
+		SerializablePersistentSession(PersistentSession session) {
 			this.expiration = session.getExpiration();
-			this.sessionData = new LinkedHashMap<String, Object>(session.getSessionData());
+			this.sessionData = new LinkedHashMap<String, Object>(
+					session.getSessionData());
 		}
 
 		public PersistentSession getPersistentSession() {

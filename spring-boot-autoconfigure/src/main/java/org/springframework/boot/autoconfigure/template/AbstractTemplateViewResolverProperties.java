@@ -28,8 +28,8 @@ import org.springframework.web.servlet.view.AbstractTemplateViewResolver;
  * @author Andy Wilkinson
  * @since 1.1.0
  */
-public abstract class AbstractTemplateViewResolverProperties extends
-		AbstractViewResolverProperties {
+public abstract class AbstractTemplateViewResolverProperties
+		extends AbstractViewResolverProperties {
 
 	/**
 	 * Prefix that gets prepended to view names when building a URL.
@@ -69,6 +69,12 @@ public abstract class AbstractTemplateViewResolverProperties extends
 	 * name "springMacroRequestContext".
 	 */
 	private boolean exposeSpringMacroHelpers = true;
+
+	/**
+	 * Set whether HttpSession attributes are allowed to override (hide) controller
+	 * generated model attributes of the same name.
+	 */
+	private boolean allowSessionOverride = false;
 
 	protected AbstractTemplateViewResolverProperties(String defaultPrefix,
 			String defaultSuffix) {
@@ -124,6 +130,14 @@ public abstract class AbstractTemplateViewResolverProperties extends
 		this.allowRequestOverride = allowRequestOverride;
 	}
 
+	public boolean isAllowSessionOverride() {
+		return this.allowSessionOverride;
+	}
+
+	public void setAllowSessionOverride(boolean allowSessionOverride) {
+		this.allowSessionOverride = allowSessionOverride;
+	}
+
 	public boolean isExposeSpringMacroHelpers() {
 		return this.exposeSpringMacroHelpers;
 	}
@@ -152,6 +166,7 @@ public abstract class AbstractTemplateViewResolverProperties extends
 		resolver.setViewNames(getViewNames());
 		resolver.setExposeRequestAttributes(isExposeRequestAttributes());
 		resolver.setAllowRequestOverride(isAllowRequestOverride());
+		resolver.setAllowSessionOverride(isAllowSessionOverride());
 		resolver.setExposeSessionAttributes(isExposeSessionAttributes());
 		resolver.setExposeSpringMacroHelpers(isExposeSpringMacroHelpers());
 		resolver.setRequestContextAttribute(getRequestContextAttribute());

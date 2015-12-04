@@ -18,12 +18,12 @@ package org.springframework.boot.autoconfigure;
 
 import java.util.List;
 
-import org.flywaydb.core.internal.util.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionEvaluationReport;
@@ -35,6 +35,7 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.mock.env.MockEnvironment;
+import org.springframework.util.StringUtils;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -76,10 +77,10 @@ public class EnableAutoConfigurationImportSelectorTests {
 	public void importsAreSelected() {
 		configureExclusions(new String[0], new String[0], new String[0]);
 		String[] imports = this.importSelector.selectImports(this.annotationMetadata);
-		assertThat(
-				imports.length,
-				is(equalTo(SpringFactoriesLoader.loadFactoryNames(
-						EnableAutoConfiguration.class, getClass().getClassLoader())
+		assertThat(imports.length,
+				is(equalTo(SpringFactoriesLoader
+						.loadFactoryNames(EnableAutoConfiguration.class,
+								getClass().getClassLoader())
 						.size())));
 		assertThat(ConditionEvaluationReport.get(this.beanFactory).getExclusions(),
 				hasSize(0));
@@ -99,7 +100,8 @@ public class EnableAutoConfigurationImportSelectorTests {
 	@Test
 	public void classNamesExclusionsAreApplied() {
 		configureExclusions(new String[0],
-				new String[] { VelocityAutoConfiguration.class.getName() }, new String[0]);
+				new String[] { VelocityAutoConfiguration.class.getName() },
+				new String[0]);
 		String[] imports = this.importSelector.selectImports(this.annotationMetadata);
 		assertThat(imports.length,
 				is(equalTo(getAutoConfigurationClassNames().size() - 1)));
@@ -120,15 +122,29 @@ public class EnableAutoConfigurationImportSelectorTests {
 
 	@Test
 	public void severalPropertyExclusionsAreApplied() {
-		configureExclusions(new String[0], new String[0], new String[] {
-				FreeMarkerAutoConfiguration.class.getName(),
-				VelocityAutoConfiguration.class.getName() });
+		configureExclusions(new String[0], new String[0],
+				new String[] { FreeMarkerAutoConfiguration.class.getName(),
+						VelocityAutoConfiguration.class.getName() });
 
 		String[] imports = this.importSelector.selectImports(this.annotationMetadata);
 		assertThat(imports.length,
 				is(equalTo(getAutoConfigurationClassNames().size() - 2)));
-		assertThat(
-				ConditionEvaluationReport.get(this.beanFactory).getExclusions(),
+		assertThat(ConditionEvaluationReport.get(this.beanFactory).getExclusions(),
+				containsInAnyOrder(FreeMarkerAutoConfiguration.class.getName(),
+						VelocityAutoConfiguration.class.getName()));
+	}
+
+	@Test
+	public void severalPropertyYamlExclusionsAreApplied() {
+		configureExclusions(new String[0], new String[0], new String[0]);
+		this.environment.setProperty("spring.autoconfigure.exclude[0]",
+				FreeMarkerAutoConfiguration.class.getName());
+		this.environment.setProperty("spring.autoconfigure.exclude[1]",
+				VelocityAutoConfiguration.class.getName());
+		String[] imports = this.importSelector.selectImports(this.annotationMetadata);
+		assertThat(imports.length,
+				is(equalTo(getAutoConfigurationClassNames().size() - 2)));
+		assertThat(ConditionEvaluationReport.get(this.beanFactory).getExclusions(),
 				containsInAnyOrder(FreeMarkerAutoConfiguration.class.getName(),
 						VelocityAutoConfiguration.class.getName()));
 	}
@@ -141,8 +157,7 @@ public class EnableAutoConfigurationImportSelectorTests {
 		String[] imports = this.importSelector.selectImports(this.annotationMetadata);
 		assertThat(imports.length,
 				is(equalTo(getAutoConfigurationClassNames().size() - 3)));
-		assertThat(
-				ConditionEvaluationReport.get(this.beanFactory).getExclusions(),
+		assertThat(ConditionEvaluationReport.get(this.beanFactory).getExclusions(),
 				containsInAnyOrder(FreeMarkerAutoConfiguration.class.getName(),
 						VelocityAutoConfiguration.class.getName(),
 						ThymeleafAutoConfiguration.class.getName()));
@@ -150,14 +165,13 @@ public class EnableAutoConfigurationImportSelectorTests {
 
 	private void configureExclusions(String[] classExclusion, String[] nameExclusion,
 			String[] propertyExclusion) {
-		given(
-				this.annotationMetadata.getAnnotationAttributes(
-						EnableAutoConfiguration.class.getName(), true)).willReturn(
-				this.annotationAttributes);
-		given(this.annotationAttributes.getStringArray("exclude")).willReturn(
-				classExclusion);
-		given(this.annotationAttributes.getStringArray("excludeName")).willReturn(
-				nameExclusion);
+		given(this.annotationMetadata
+				.getAnnotationAttributes(EnableAutoConfiguration.class.getName(), true))
+						.willReturn(this.annotationAttributes);
+		given(this.annotationAttributes.getStringArray("exclude"))
+				.willReturn(classExclusion);
+		given(this.annotationAttributes.getStringArray("excludeName"))
+				.willReturn(nameExclusion);
 		if (propertyExclusion.length > 0) {
 			String value = StringUtils.arrayToCommaDelimitedString(propertyExclusion);
 			this.environment.setProperty("spring.autoconfigure.exclude", value);

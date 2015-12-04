@@ -19,6 +19,7 @@ package org.springframework.boot.actuate.endpoint;
 import java.util.Iterator;
 
 import org.junit.Test;
+
 import org.springframework.boot.actuate.metrics.Metric;
 import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
@@ -32,7 +33,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Tests for {@link TomcatPublicMetrics}
  *
- * @author Johannes Stelzer
+ * @author Johannes Edmeier
  * @author Phillip Webb
  */
 public class TomcatPublicMetricsTests {

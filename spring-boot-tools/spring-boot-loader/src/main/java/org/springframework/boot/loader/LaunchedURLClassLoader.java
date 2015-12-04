@@ -62,6 +62,11 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 		return null;
 	}
 
+	/**
+	 * Gets the resource with the given {@code name}. Unlike a standard
+	 * {@link ClassLoader}, this method will first search the root class loader. If the
+	 * resource is not found, this method will call {@link #findResource(String)}.
+	 */
 	@Override
 	public URL getResource(String name) {
 		URL url = null;
@@ -77,7 +82,13 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 			if (name.equals("") && hasURLs()) {
 				return getURLs()[0];
 			}
-			return super.findResource(name);
+			Handler.setUseFastConnectionExceptions(true);
+			try {
+				return super.findResource(name);
+			}
+			finally {
+				Handler.setUseFastConnectionExceptions(false);
+			}
 		}
 		catch (IllegalArgumentException ex) {
 			return null;
@@ -89,13 +100,25 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 		if (name.equals("") && hasURLs()) {
 			return Collections.enumeration(Arrays.asList(getURLs()));
 		}
-		return super.findResources(name);
+		Handler.setUseFastConnectionExceptions(true);
+		try {
+			return super.findResources(name);
+		}
+		finally {
+			Handler.setUseFastConnectionExceptions(false);
+		}
 	}
 
 	private boolean hasURLs() {
 		return getURLs().length > 0;
 	}
 
+	/**
+	 * Gets the resources with the given {@code name}. Returns a combination of the
+	 * resources found by {@link #findResources(String)} and from
+	 * {@link ClassLoader#getResources(String) getResources(String)} on the root class
+	 * loader, if any.
+	 */
 	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
 		if (this.rootClassLoader == null) {
@@ -138,6 +161,7 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 			}
 		}
 		catch (Exception ex) {
+			// Ignore and continue
 		}
 
 		// 2) Try to find locally
@@ -147,6 +171,7 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 			return cls;
 		}
 		catch (Exception ex) {
+			// Ignore and continue
 		}
 
 		// 3) Use standard loading
@@ -188,7 +213,8 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 								// manifest
 								if (jarFile.getJarEntryData(path) != null
 										&& jarFile.getManifest() != null) {
-									definePackage(packageName, jarFile.getManifest(), url);
+									definePackage(packageName, jarFile.getManifest(),
+											url);
 									return null;
 								}
 
@@ -251,7 +277,7 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 
 		private final Enumeration<URL> localResources;
 
-		public ResourceEnumeration(Enumeration<URL> rootResources,
+		ResourceEnumeration(Enumeration<URL> rootResources,
 				Enumeration<URL> localResources) {
 			this.rootResources = rootResources;
 			this.localResources = localResources;
@@ -277,6 +303,6 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 			return this.localResources.nextElement();
 		}
 
-	};
+	}
 
 }

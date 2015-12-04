@@ -21,6 +21,7 @@ import javax.servlet.Filter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.oauth2.OAuth2AutoConfiguration;
@@ -52,7 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Dave Syer
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = TestConfiguration.class)
+@SpringApplicationConfiguration(TestConfiguration.class)
 @WebAppConfiguration
 @TestPropertySource(properties = { "security.oauth2.client.clientId=client",
 		"security.oauth2.client.clientSecret=secret",
@@ -89,6 +90,12 @@ public class CustomOAuth2SsoConfigurationTests {
 	}
 
 	@Test
+	public void uiPageSends401ToXhr() throws Exception {
+		this.mvc.perform(get("/ui/").header("X-Requested-With", "XMLHttpRequest"))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
 	public void uiTestPageIsAccessible() throws Exception {
 		this.mvc.perform(get("/ui/test")).andExpect(status().isOk())
 				.andExpect(content().string("test"));
@@ -109,7 +116,7 @@ public class CustomOAuth2SsoConfigurationTests {
 		@RestController
 		public static class TestController {
 
-			@RequestMapping(value = "/ui/test")
+			@RequestMapping("/ui/test")
 			public String test() {
 				return "test";
 			}

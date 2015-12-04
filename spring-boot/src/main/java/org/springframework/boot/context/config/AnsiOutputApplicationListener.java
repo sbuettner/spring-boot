@@ -31,8 +31,8 @@ import org.springframework.core.Ordered;
  * @author Raphael von der Grün
  * @since 1.2.0
  */
-public class AnsiOutputApplicationListener implements
-		ApplicationListener<ApplicationEnvironmentPreparedEvent>, Ordered {
+public class AnsiOutputApplicationListener
+		implements ApplicationListener<ApplicationEnvironmentPreparedEvent>, Ordered {
 
 	@Override
 	public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
@@ -44,14 +44,15 @@ public class AnsiOutputApplicationListener implements
 		}
 
 		if (resolver.containsProperty("console-available")) {
-			AnsiOutput.setConsoleAvailable(resolver.getProperty("console-available",
-					Boolean.class));
+			AnsiOutput.setConsoleAvailable(
+					resolver.getProperty("console-available", Boolean.class));
 		}
 	}
 
 	@Override
 	public int getOrder() {
-		// Apply after the ConfigFileApplicationListener
+		// Apply after ConfigFileApplicationListener has called all
+		// EnvironmentPostProcessors
 		return ConfigFileApplicationListener.DEFAULT_ORDER + 1;
 	}
 

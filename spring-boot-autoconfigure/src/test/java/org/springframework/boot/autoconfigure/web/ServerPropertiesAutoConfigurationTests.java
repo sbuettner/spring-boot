@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.embedded.AbstractEmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext;
@@ -146,7 +147,7 @@ public class ServerPropertiesAutoConfigurationTests {
 	@Test
 	public void testAccidentalMultipleServerPropertiesBeans() throws Exception {
 		this.context = new AnnotationConfigEmbeddedWebApplicationContext();
-		this.context.register(Config.class, MutiServerPropertiesBeanConfig.class,
+		this.context.register(Config.class, MultiServerPropertiesBeanConfig.class,
 				ServerPropertiesAutoConfiguration.class,
 				PropertyPlaceholderAutoConfiguration.class);
 		this.thrown.expect(ApplicationContextException.class);
@@ -221,7 +222,7 @@ public class ServerPropertiesAutoConfigurationTests {
 	}
 
 	@Configuration
-	protected static class MutiServerPropertiesBeanConfig {
+	protected static class MultiServerPropertiesBeanConfig {
 
 		@Bean
 		public ServerProperties serverPropertiesOne() {

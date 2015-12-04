@@ -43,7 +43,7 @@ public abstract class AbstractJsonParserTests {
 	}
 
 	@Test
-	public void testDoubleValie() {
+	public void testDoubleValue() {
 		Map<String, Object> map = this.parser.parseMap("{\"foo\":\"bar\",\"spam\":1.23}");
 		assertEquals(2, map.size());
 		assertEquals("bar", map.get("foo"));
@@ -81,8 +81,8 @@ public abstract class AbstractJsonParserTests {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testMapOfLists() {
-		Map<String, Object> map = this.parser
-				.parseMap("{\"foo\":[{\"foo\":\"bar\",\"spam\":1},{\"foo\":\"baz\",\"spam\":2}]}");
+		Map<String, Object> map = this.parser.parseMap(
+				"{\"foo\":[{\"foo\":\"bar\",\"spam\":1},{\"foo\":\"baz\",\"spam\":2}]}");
 		assertEquals(1, map.size());
 		assertEquals(2, ((List<Object>) map.get("foo")).size());
 	}

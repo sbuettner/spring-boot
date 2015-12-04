@@ -21,6 +21,7 @@ import javax.servlet.Filter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.oauth2.OAuth2AutoConfiguration;
@@ -46,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Dave Syer
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = TestConfiguration.class)
+@SpringApplicationConfiguration(TestConfiguration.class)
 @WebAppConfiguration
 @TestPropertySource(properties = { "security.oauth2.client.clientId=client",
 		"security.oauth2.client.clientSecret=secret",
@@ -74,6 +75,12 @@ public class BasicOAuth2SsoConfigurationTests {
 	public void homePageIsSecure() throws Exception {
 		this.mvc.perform(get("/")).andExpect(status().isFound())
 				.andExpect(header().string("location", "http://localhost/login"));
+	}
+
+	@Test
+	public void homePageSends401ToXhr() throws Exception {
+		this.mvc.perform(get("/").header("X-Requested-With", "XMLHttpRequest"))
+				.andExpect(status().isUnauthorized());
 	}
 
 	@Configuration

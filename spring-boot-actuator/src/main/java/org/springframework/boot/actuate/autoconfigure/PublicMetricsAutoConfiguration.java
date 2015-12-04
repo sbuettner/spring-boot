@@ -23,6 +23,7 @@ import javax.servlet.Servlet;
 import javax.sql.DataSource;
 
 import org.apache.catalina.startup.Tomcat;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.cache.CacheStatisticsProvider;
 import org.springframework.boot.actuate.endpoint.CachePublicMetrics;
@@ -45,6 +46,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnJava;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnJava.JavaVersion;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.integration.IntegrationAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvider;
@@ -59,7 +61,7 @@ import org.springframework.lang.UsesJava7;
  *
  * @author Stephane Nicoll
  * @author Phillip Webb
- * @author Johannes Stelzer
+ * @author Johannes Edmeier
  * @since 1.2.0
  */
 @Configuration
@@ -107,6 +109,7 @@ public class PublicMetricsAutoConfiguration {
 
 	@Configuration
 	@ConditionalOnClass({ Servlet.class, Tomcat.class })
+	@ConditionalOnWebApplication
 	static class TomcatMetricsConfiguration {
 
 		@Bean
@@ -142,8 +145,8 @@ public class PublicMetricsAutoConfiguration {
 		@ConditionalOnMissingBean
 		public MetricReaderPublicMetrics springIntegrationPublicMetrics(
 				IntegrationMBeanExporter exporter) {
-			return new MetricReaderPublicMetrics(new SpringIntegrationMetricReader(
-					exporter));
+			return new MetricReaderPublicMetrics(
+					new SpringIntegrationMetricReader(exporter));
 		}
 
 	}

@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import liquibase.integration.spring.SpringLiquibase;
-
 import org.flywaydb.core.Flyway;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.endpoint.AutoConfigurationReportEndpoint;
@@ -35,6 +35,7 @@ import org.springframework.boot.actuate.endpoint.BeansEndpoint;
 import org.springframework.boot.actuate.endpoint.ConfigurationPropertiesReportEndpoint;
 import org.springframework.boot.actuate.endpoint.DumpEndpoint;
 import org.springframework.boot.actuate.endpoint.Endpoint;
+import org.springframework.boot.actuate.endpoint.EndpointProperties;
 import org.springframework.boot.actuate.endpoint.EnvironmentEndpoint;
 import org.springframework.boot.actuate.endpoint.FlywayEndpoint;
 import org.springframework.boot.actuate.endpoint.HealthEndpoint;
@@ -60,6 +61,7 @@ import org.springframework.boot.autoconfigure.condition.SearchStrategy;
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.bind.PropertiesConfigurationFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
@@ -82,6 +84,7 @@ import org.springframework.web.servlet.handler.AbstractHandlerMethodMapping;
  */
 @Configuration
 @AutoConfigureAfter({ FlywayAutoConfiguration.class, LiquibaseAutoConfiguration.class })
+@EnableConfigurationProperties(EndpointProperties.class)
 public class EndpointAutoConfiguration {
 
 	@Autowired
@@ -266,8 +269,8 @@ public class EndpointAutoConfiguration {
 			private String time;
 
 			public String getId() {
-				return this.id == null ? "" : (this.id.length() > 7 ? this.id.substring(
-						0, 7) : this.id);
+				return this.id == null ? ""
+						: (this.id.length() > 7 ? this.id.substring(0, 7) : this.id);
 			}
 
 			public void setId(String id) {

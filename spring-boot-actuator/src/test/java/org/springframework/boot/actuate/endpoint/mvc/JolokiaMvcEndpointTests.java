@@ -22,6 +22,7 @@ import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.EndpointWebMvcAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.JolokiaAutoConfiguration;
@@ -57,7 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Dave Syer
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = { Config.class })
+@SpringApplicationConfiguration(Config.class)
 @WebAppConfiguration
 public class JolokiaMvcEndpointTests {
 
@@ -72,8 +73,8 @@ public class JolokiaMvcEndpointTests {
 	@Before
 	public void setUp() {
 		this.mvc = MockMvcBuilders.webAppContextSetup(this.context).build();
-		EnvironmentTestUtils.addEnvironment(
-				(ConfigurableApplicationContext) this.context, "foo:bar");
+		EnvironmentTestUtils.addEnvironment((ConfigurableApplicationContext) this.context,
+				"foo:bar");
 	}
 
 	@Test

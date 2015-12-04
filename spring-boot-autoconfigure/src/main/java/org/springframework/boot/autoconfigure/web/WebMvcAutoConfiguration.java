@@ -20,13 +20,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.Servlet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
@@ -40,6 +43,7 @@ import org.springframework.boot.autoconfigure.web.ResourceProperties.Strategy;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.web.OrderedHiddenHttpMethodFilter;
 import org.springframework.boot.context.web.OrderedHttpPutFormContentFilter;
+import org.springframework.boot.context.web.OrderedRequestContextFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -48,22 +52,25 @@ import org.springframework.core.Ordered;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.GenericConverter;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.format.Formatter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.datetime.DateFormatter;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.validation.DefaultMessageCodesResolver;
 import org.springframework.validation.MessageCodesResolver;
 import org.springframework.web.accept.ContentNegotiationManager;
+import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.filter.HttpPutFormContentFilter;
+import org.springframework.web.filter.RequestContextFilter;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceChainRegistration;
@@ -91,6 +98,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
  * @author Dave Syer
  * @author Andy Wilkinson
  * @author Sébastien Deleuze
+ * @author Eddú Meléndez
  */
 @Configuration
 @ConditionalOnWebApplication
@@ -136,9 +144,6 @@ public class WebMvcAutoConfiguration {
 		private ListableBeanFactory beanFactory;
 
 		@Autowired
-		private ResourceLoader resourceLoader;
-
-		@Autowired
 		private HttpMessageConverters messageConverters;
 
 		@Override
@@ -154,6 +159,14 @@ public class WebMvcAutoConfiguration {
 			}
 		}
 
+		@Override
+		public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+			Map<String, MediaType> mediaTypes = this.mvcProperties.getMediaTypes();
+			for (String extension : mediaTypes.keySet()) {
+				configurer.mediaType(extension, mediaTypes.get(extension));
+			}
+		}
+
 		@Bean
 		@ConditionalOnMissingBean
 		public InternalResourceViewResolver defaultViewResolver() {
@@ -164,9 +177,10 @@ public class WebMvcAutoConfiguration {
 		}
 
 		@Bean
-		@ConditionalOnMissingBean
-		public RequestContextListener requestContextListener() {
-			return new RequestContextListener();
+		@ConditionalOnMissingBean({ RequestContextListener.class,
+				RequestContextFilter.class })
+		public RequestContextFilter requestContextFilter() {
+			return new OrderedRequestContextFilter();
 		}
 
 		@Bean
@@ -182,8 +196,8 @@ public class WebMvcAutoConfiguration {
 		@ConditionalOnMissingBean(name = "viewResolver", value = ContentNegotiatingViewResolver.class)
 		public ContentNegotiatingViewResolver viewResolver(BeanFactory beanFactory) {
 			ContentNegotiatingViewResolver resolver = new ContentNegotiatingViewResolver();
-			resolver.setContentNegotiationManager(beanFactory
-					.getBean(ContentNegotiationManager.class));
+			resolver.setContentNegotiationManager(
+					beanFactory.getBean(ContentNegotiationManager.class));
 			// ContentNegotiatingViewResolver uses all the other view resolvers to locate
 			// a view so it should have a high precedence
 			resolver.setOrder(Ordered.HIGHEST_PRECEDENCE);
@@ -207,8 +221,8 @@ public class WebMvcAutoConfiguration {
 		public MessageCodesResolver getMessageCodesResolver() {
 			if (this.mvcProperties.getMessageCodesResolverFormat() != null) {
 				DefaultMessageCodesResolver resolver = new DefaultMessageCodesResolver();
-				resolver.setMessageCodeFormatter(this.mvcProperties
-						.getMessageCodesResolverFormat());
+				resolver.setMessageCodeFormatter(
+						this.mvcProperties.getMessageCodesResolverFormat());
 				return resolver;
 			}
 			return null;
@@ -243,9 +257,9 @@ public class WebMvcAutoConfiguration {
 						.addResourceLocations("classpath:/META-INF/resources/webjars/")
 						.setCachePeriod(cachePeriod));
 			}
-			if (!registry.hasMappingForPattern("/**")) {
-				registerResourceChain(registry
-						.addResourceHandler("/**")
+			String staticPathPattern = this.mvcProperties.getStaticPathPattern();
+			if (!registry.hasMappingForPattern(staticPathPattern)) {
+				registerResourceChain(registry.addResourceHandler(staticPathPattern)
 						.addResourceLocations(
 								this.resourceProperties.getStaticLocations())
 						.setCachePeriod(cachePeriod));
@@ -254,9 +268,7 @@ public class WebMvcAutoConfiguration {
 
 		private void registerResourceChain(ResourceHandlerRegistration registration) {
 			ResourceProperties.Chain properties = this.resourceProperties.getChain();
-			if (Boolean.TRUE.equals(properties.getEnabled())
-					|| properties.getStrategy().getFixed().isEnabled()
-					|| properties.getStrategy().getContent().isEnabled()) {
+			if (properties.getEnabled()) {
 				configureResourceChain(properties,
 						registration.resourceChain(properties.isCache()));
 			}
@@ -307,7 +319,7 @@ public class WebMvcAutoConfiguration {
 			@Bean
 			public SimpleUrlHandlerMapping faviconHandlerMapping() {
 				SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
-				mapping.setOrder(Integer.MIN_VALUE + 1);
+				mapping.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
 				mapping.setUrlMap(Collections.singletonMap("**/favicon.ico",
 						faviconRequestHandler()));
 				return mapping;
@@ -334,6 +346,9 @@ public class WebMvcAutoConfiguration {
 		@Autowired(required = false)
 		private WebMvcProperties mvcProperties;
 
+		@Autowired
+		private ListableBeanFactory beanFactory;
+
 		@Bean
 		@Override
 		public RequestMappingHandlerAdapter requestMappingHandlerAdapter() {
@@ -349,6 +364,16 @@ public class WebMvcAutoConfiguration {
 		public RequestMappingHandlerMapping requestMappingHandlerMapping() {
 			// Must be @Primary for MvcUriComponentsBuilder to work
 			return super.requestMappingHandlerMapping();
+		}
+
+		@Override
+		protected ConfigurableWebBindingInitializer getConfigurableWebBindingInitializer() {
+			try {
+				return this.beanFactory.getBean(ConfigurableWebBindingInitializer.class);
+			}
+			catch (NoSuchBeanDefinitionException ex) {
+				return super.getConfigurableWebBindingInitializer();
+			}
 		}
 
 	}

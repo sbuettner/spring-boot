@@ -33,6 +33,7 @@ import org.crsh.telnet.term.processor.ProcessorIOHandler;
 import org.crsh.vfs.Resource;
 import org.junit.After;
 import org.junit.Test;
+
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,6 +62,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Christian Dupuis
  * @author Andreas Ahlenstorf
+ * @author Eddú Meléndez
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CrshAutoConfigurationTests {
@@ -79,10 +81,7 @@ public class CrshAutoConfigurationTests {
 		MockEnvironment env = new MockEnvironment();
 		env.setProperty("shell.disabled_plugins",
 				"GroovyREPL, termIOHandler, org.crsh.auth.AuthenticationPlugin");
-		this.context = new AnnotationConfigWebApplicationContext();
-		this.context.setEnvironment(env);
-		this.context.register(CrshAutoConfiguration.class);
-		this.context.refresh();
+		load(env);
 
 		PluginLifeCycle lifeCycle = this.context.getBean(PluginLifeCycle.class);
 		assertNotNull(lifeCycle);
@@ -111,14 +110,15 @@ public class CrshAutoConfigurationTests {
 		MockEnvironment env = new MockEnvironment();
 		env.setProperty("shell.ssh.enabled", "true");
 		env.setProperty("shell.ssh.port", "3333");
-		this.context = new AnnotationConfigWebApplicationContext();
-		this.context.setEnvironment(env);
-		this.context.register(CrshAutoConfiguration.class);
-		this.context.refresh();
+		load(env);
 
 		PluginLifeCycle lifeCycle = this.context.getBean(PluginLifeCycle.class);
 
 		assertEquals("3333", lifeCycle.getConfig().getProperty("crash.ssh.port"));
+		assertEquals("600000",
+				lifeCycle.getConfig().getProperty("crash.ssh.auth_timeout"));
+		assertEquals("600000",
+				lifeCycle.getConfig().getProperty("crash.ssh.idle_timeout"));
 	}
 
 	@Test
@@ -126,15 +126,35 @@ public class CrshAutoConfigurationTests {
 		MockEnvironment env = new MockEnvironment();
 		env.setProperty("shell.ssh.enabled", "true");
 		env.setProperty("shell.ssh.key_path", "~/.ssh/id.pem");
-		this.context = new AnnotationConfigWebApplicationContext();
-		this.context.setEnvironment(env);
-		this.context.register(CrshAutoConfiguration.class);
-		this.context.refresh();
+		load(env);
 
 		PluginLifeCycle lifeCycle = this.context.getBean(PluginLifeCycle.class);
 
 		assertEquals("~/.ssh/id.pem",
 				lifeCycle.getConfig().getProperty("crash.ssh.keypath"));
+	}
+
+	@Test
+	public void testSshConfigurationCustomTimeouts() {
+		MockEnvironment env = new MockEnvironment();
+		env.setProperty("shell.ssh.enabled", "true");
+		env.setProperty("shell.ssh.auth-timeout", "300000");
+		env.setProperty("shell.ssh.idle-timeout", "400000");
+		load(env);
+
+		PluginLifeCycle lifeCycle = this.context.getBean(PluginLifeCycle.class);
+
+		assertEquals("300000",
+				lifeCycle.getConfig().getProperty("crash.ssh.auth_timeout"));
+		assertEquals("400000",
+				lifeCycle.getConfig().getProperty("crash.ssh.idle_timeout"));
+	}
+
+	private void load(MockEnvironment env) {
+		this.context = new AnnotationConfigWebApplicationContext();
+		this.context.setEnvironment(env);
+		this.context.register(CrshAutoConfiguration.class);
+		this.context.refresh();
 	}
 
 	@Test
@@ -194,8 +214,8 @@ public class CrshAutoConfigurationTests {
 		PluginContext pluginContext = lifeCycle.getContext();
 
 		int count = 0;
-		Iterator<AuthenticationPlugin> plugins = pluginContext.getPlugins(
-				AuthenticationPlugin.class).iterator();
+		Iterator<AuthenticationPlugin> plugins = pluginContext
+				.getPlugins(AuthenticationPlugin.class).iterator();
 		while (plugins.hasNext()) {
 			count++;
 			plugins.next();
@@ -230,8 +250,8 @@ public class CrshAutoConfigurationTests {
 
 		PluginLifeCycle lifeCycle = this.context.getBean(PluginLifeCycle.class);
 		assertEquals("jaas", lifeCycle.getConfig().get("crash.auth"));
-		assertEquals("my-test-domain", lifeCycle.getConfig()
-				.get("crash.auth.jaas.domain"));
+		assertEquals("my-test-domain",
+				lifeCycle.getConfig().get("crash.auth.jaas.domain"));
 	}
 
 	@Test
@@ -270,8 +290,8 @@ public class CrshAutoConfigurationTests {
 		AuthenticationPlugin<String> authenticationPlugin = null;
 		String authentication = lifeCycle.getConfig().getProperty("crash.auth");
 		assertNotNull(authentication);
-		for (AuthenticationPlugin plugin : lifeCycle.getContext().getPlugins(
-				AuthenticationPlugin.class)) {
+		for (AuthenticationPlugin plugin : lifeCycle.getContext()
+				.getPlugins(AuthenticationPlugin.class)) {
 			if (authentication.equals(plugin.getName())) {
 				authenticationPlugin = plugin;
 				break;
@@ -299,8 +319,8 @@ public class CrshAutoConfigurationTests {
 		AuthenticationPlugin<String> authenticationPlugin = null;
 		String authentication = lifeCycle.getConfig().getProperty("crash.auth");
 		assertNotNull(authentication);
-		for (AuthenticationPlugin plugin : lifeCycle.getContext().getPlugins(
-				AuthenticationPlugin.class)) {
+		for (AuthenticationPlugin plugin : lifeCycle.getContext()
+				.getPlugins(AuthenticationPlugin.class)) {
 			if (authentication.equals(plugin.getName())) {
 				authenticationPlugin = plugin;
 				break;
@@ -314,7 +334,8 @@ public class CrshAutoConfigurationTests {
 	}
 
 	@Test
-	public void testSpringAuthenticationProviderAsDefaultConfiguration() throws Exception {
+	public void testSpringAuthenticationProviderAsDefaultConfiguration()
+			throws Exception {
 		this.context = new AnnotationConfigWebApplicationContext();
 		this.context.setServletContext(new MockServletContext());
 		this.context.register(ManagementServerPropertiesAutoConfiguration.class);
@@ -328,8 +349,8 @@ public class CrshAutoConfigurationTests {
 		AuthenticationPlugin<String> authenticationPlugin = null;
 		String authentication = lifeCycle.getConfig().getProperty("crash.auth");
 		assertNotNull(authentication);
-		for (AuthenticationPlugin plugin : lifeCycle.getContext().getPlugins(
-				AuthenticationPlugin.class)) {
+		for (AuthenticationPlugin plugin : lifeCycle.getContext()
+				.getPlugins(AuthenticationPlugin.class)) {
 			if (authentication.equals(plugin.getName())) {
 				authenticationPlugin = plugin;
 				break;
@@ -360,12 +381,12 @@ public class CrshAutoConfigurationTests {
 							&& authentication.getCredentials().equals(PASSWORD)) {
 						authentication = new UsernamePasswordAuthenticationToken(
 								authentication.getPrincipal(),
-								authentication.getCredentials(),
-								Collections
+								authentication.getCredentials(), Collections
 										.singleton(new SimpleGrantedAuthority("ADMIN")));
 					}
 					else {
-						throw new BadCredentialsException("Invalid username and password");
+						throw new BadCredentialsException(
+								"Invalid username and password");
 					}
 					return authentication;
 				}
